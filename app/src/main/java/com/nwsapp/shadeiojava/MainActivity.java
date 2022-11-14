@@ -10,6 +10,7 @@ import android.os.SharedMemory;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageButton;
 
@@ -50,6 +51,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     List<MyCol> colorList;
     List<MyCol> sortedColorList;
+
+    Button start_game_btn;
 
     // utility purposes
     int screenWidth,screenHeight;
@@ -104,11 +107,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         colorsGridView.setVerticalSpacing((int) (screenWidth/50F));
         colorsGridView.setHorizontalSpacing((int) (screenWidth/50F));
+
+        start_game_btn=findViewById(R.id.start_game_btn);
     }
 
     List<Integer> list=new ArrayList<>();
 
     public void startNewGame(View view){
+        start_game_btn.setEnabled(false);
+        start_game_btn.setClickable(false);
 
         // to remove if any current game is On
         //Todo code
@@ -135,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 ////            colorList.add(new MyCol(255-ptr,255-ptr,255-ptr));
 //            ptr+=35;
 //        }
+        start_game_btn.setText("Generating new game...");
 
 
         int numCount=currRowCount*currColCount;
@@ -207,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 sortedColorList.add(new MyCol(0, 0,511-num));
             }
         }
-        colorsGridView.setAdapter(new MyGridAdapter(this,colorList,sortedColorList,currRowCount,currColCount));
+        colorsGridView.setAdapter(new MyGridAdapter(this,colorList,sortedColorList,currRowCount,currColCount,start_game_btn));
 
     }
 
