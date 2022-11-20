@@ -5,5 +5,5 @@
         android:color="@color/llight_gray"/>
 
     <corners
-        android:radius="25dp"/>
+        android:radius="9999dp"/>
 </shape>

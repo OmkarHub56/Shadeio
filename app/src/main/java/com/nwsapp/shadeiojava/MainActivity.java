@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.sql.Array;
 import java.util.ArrayList;
@@ -23,18 +25,21 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    String TAG="OMK";
+    // the four color selection buttons
     ImageButton blueColorSel;
     ImageButton redColorSel;
     ImageButton yellowColorSel;
     ImageButton blackColorSel;
 
+    // the four difficulty selection buttons
     ImageButton easyDiffSel;
     ImageButton medDiffSel;
     ImageButton hardDiffSel;
     ImageButton extDiffSel;
 
+    // curr selected color and difficulty
     ImageButton currSelColour,currSelDiff;
+
     int EASY_HORIZONTAL_BOX_COUNT=3;
     int MEDIUM_HORIZONTAL_BOX_COUNT=5;
     int HARD_HORIZONTAL_BOX_COUNT=6;
@@ -49,11 +54,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     GridView colorsGridView;
 
-    List<MyCol> colorList;
-    List<MyCol> sortedColorList;
-
     Button start_game_btn;
 
+    MyGridAdapter gridAdapter;
+
+    LinearLayout startGame;
+
+    ImageButton sound_adjust;
     // utility purposes
     int screenWidth,screenHeight;
     float screenDensity;
@@ -67,18 +74,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         screenHeight=getResources().getDisplayMetrics().heightPixels;
         screenDensity=getResources().getDisplayMetrics().density;
 
-        // setting the colour change buttons
         blueColorSel=findViewById(R.id.blue_col);
+        blueColorSel.getLayoutParams().width= (int) (screenHeight/35f);
+        blueColorSel.getLayoutParams().height= (int) (screenHeight/35f);
         redColorSel=findViewById(R.id.red_col);
+        redColorSel.getLayoutParams().width= (int) (screenHeight/35f);
+        redColorSel.getLayoutParams().height= (int) (screenHeight/35f);
         yellowColorSel=findViewById(R.id.yellow_col);
+        yellowColorSel.getLayoutParams().width= (int) (screenHeight/35f);
+        yellowColorSel.getLayoutParams().height= (int) (screenHeight/35f);
         blackColorSel=findViewById(R.id.black_col);
+        blackColorSel.getLayoutParams().width= (int) (screenHeight/35f);
+        blackColorSel.getLayoutParams().height= (int) (screenHeight/35f);
         currSelColour=blueColorSel;
 
         // setting diff change buttons
         easyDiffSel=findViewById(R.id.easy_diff);
+        easyDiffSel.getLayoutParams().width= (int) (screenHeight/35f);
+        easyDiffSel.getLayoutParams().height= (int) (screenHeight/35f);
         medDiffSel=findViewById(R.id.med_diff);
+        medDiffSel.getLayoutParams().width= (int) (screenHeight/35f);
+        medDiffSel.getLayoutParams().height= (int) (screenHeight/35f);
         hardDiffSel=findViewById(R.id.hard_diff);
+        hardDiffSel.getLayoutParams().width= (int) (screenHeight/35f);
+        hardDiffSel.getLayoutParams().height= (int) (screenHeight/35f);
         extDiffSel=findViewById(R.id.ext_diff);
+        extDiffSel.getLayoutParams().width= (int) (screenHeight/35f);
+        extDiffSel.getLayoutParams().height= (int) (screenHeight/35f);
         currSelDiff=easyDiffSel;
 
         blueColorSel.setOnClickListener(this);
@@ -91,9 +113,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         hardDiffSel.setOnClickListener(this);
         extDiffSel.setOnClickListener(this);
 
-        colorList=new ArrayList<>();
-        sortedColorList=new ArrayList<>();
+        sound_adjust=findViewById(R.id.imageButton);
+        sound_adjust.getLayoutParams().height= (int) (screenWidth/15f);
+        sound_adjust.getLayoutParams().width= (int) (screenWidth/15f);
 
+
+        // setting the margins and some other attributes for the gridview
         colorsGridView=findViewById(R.id.colorsGridView);
         int marginLength= (int) (screenWidth/10F);
         ViewGroup.MarginLayoutParams params = (GridView.MarginLayoutParams) colorsGridView.getLayoutParams();
@@ -102,80 +127,103 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         params.rightMargin=marginLength;
         params.topMargin=marginLength;
 
-//        int marginTop=(int) (screenHeight/3F);
-//        params.topMargin=marginTop;
-
         colorsGridView.setVerticalSpacing((int) (screenWidth/50F));
         colorsGridView.setHorizontalSpacing((int) (screenWidth/50F));
 
+        // button to start the game
         start_game_btn=findViewById(R.id.start_game_btn);
+
+        // linear_layout inside which there is start button
+        startGame=findViewById(R.id.startgame_ll);
+        int ml= (int) (screenWidth/40F);
+        ViewGroup.MarginLayoutParams params1 = (LinearLayout.MarginLayoutParams) startGame.getLayoutParams();
+        params1.leftMargin=ml;
+        params1.bottomMargin=ml;
+        params1.rightMargin=ml;
+
+        LinearLayout ll=findViewById(R.id.set_linear);
+        int ml2= (int) (screenWidth/30F);
+        ViewGroup.MarginLayoutParams params2 = (LinearLayout.MarginLayoutParams) ll.getLayoutParams();
+        params2.leftMargin=ml2;
+        params2.topMargin=ml2;
+        params2.rightMargin=ml2;
+
+        TextView t1=findViewById(R.id.textView),t2=findViewById(R.id.textView1);
+        t1.setPadding((int) (screenWidth/50f),0, (int) (screenWidth/50f),0);
+        t2.setPadding((int) (screenWidth/50f),0, (int) (screenWidth/50f),0);
+
+        // start the initial game
+        startNewGame(start_game_btn);
     }
 
+
+    List<MyCol> colorList=new ArrayList<>();
+    List<MyCol> sortedColorList=new ArrayList<>();
     List<Integer> list=new ArrayList<>();
-
     public void startNewGame(View view){
-        start_game_btn.setEnabled(false);
-        start_game_btn.setClickable(false);
-
-        // to remove if any current game is On
-        //Todo code
-
-
-
 
         colorList.clear();
         sortedColorList.clear();
         list.clear();
         colorsGridView.setNumColumns(currColCount);
 
-        // just for testing color differentiation
+//         just for testing color differentiation
+//         this shouldn't be deleted
 //        int ptr=1;
 //        for(int i=0;i<currRowCount*currColCount;i++){
 //            Random rand=new Random();
 ////            int a=Math.abs(rand.nextInt(2));
 //            if(ptr<=255){
-//                colorList.add(new MyCol(0, 255-ptr,255));
+//                colorList.add(new MyCol(255-ptr, 255-ptr,255-ptr));
 //            }
 //            else{
-//                colorList.add(new MyCol(0, 0,510-ptr));
+//                colorList.add(new MyCol(255-ptr, 255-ptr,255-ptr));
 //            }
 ////            colorList.add(new MyCol(255-ptr,255-ptr,255-ptr));
-//            ptr+=35;
+//            ptr+=5;
 //        }
-        start_game_btn.setText("Generating new game...");
 
 
         int numCount=currRowCount*currColCount;
         int minDist;
         if(numCount==6){
-            minDist=40;
+            minDist=30;
+            if(currSelColour==blackColorSel){
+                minDist=15;
+            }
         }
         else if(numCount==15){
-            minDist=25;
+            minDist=15;
+            if(currSelColour==blackColorSel){
+                minDist=9;
+            }
         }
         else if(numCount==24){
-            minDist=15;
+            minDist=9;
+            if(currSelColour==blackColorSel){
+                minDist=5;
+            }
         }
         else{
             minDist=5;
+            if(currSelColour==blackColorSel){
+                minDist=2;
+            }
         }
-        list.clear();
-        pl("minDist : "+minDist);
-        pl("numCount : "+numCount);
-        int []arr=new int[513];
-        Arrays.fill(arr,0);
+
+        // generates a random number out of the remaining indices
         Random rand=new Random();
-        int availableNumbers=511;
+        int []arr=new int[currSelColour==blackColorSel?258:513];
+        int availableNumbers=currSelColour==blackColorSel?256:511;
         for(int i=0;i<numCount;i++){
-            pl("availableNums : "+availableNumbers);
             int a=rand.nextInt(availableNumbers)+1;
             int ptr=0;
-            for(int j=1;j<=511;j++){
+            for(int j=1;j<=(currSelColour==blackColorSel?256:511);j++){
                 if(arr[j]==0){
                     ptr++;
                 }
                 if(ptr==a){
-                    for(int k=Math.max(1,j-minDist+1);k<=Math.min(511,j+minDist-1);k++){
+                    for(int k=Math.max(1,j-minDist+1);k<=Math.min(currSelColour==blackColorSel?256:511,j+minDist-1);k++){
                         if(arr[k]==0){
                             arr[k]=1;
                             availableNumbers--;
@@ -195,27 +243,68 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        }
 //        pl(a);
 
-        for(int i=0;i<numCount;i++){
-            int num=list.get(i);
-            if(num<=256){
-                colorList.add(new MyCol(0,256-num,255));
+        if(currSelColour==blueColorSel){
+            for(int i=0;i<numCount;i++){
+                int num=list.get(i);
+                if(num<=256){
+                    colorList.add(new MyCol(0,256-num,255));
+                }
+                else{
+                    colorList.add(new MyCol(0, 0,511-num));
+                }
             }
-            else{
-                colorList.add(new MyCol(0, 0,511-num));
+        }
+        else if(currSelColour==blackColorSel){
+            for(int i=0;i<numCount;i++){
+                int num=list.get(i);
+                colorList.add(new MyCol(255-num,255-num,255-num));
+            }
+        }
+        else{
+            for(int i=0;i<numCount;i++){
+                int num=list.get(i);
+                if(num<=256){
+                    colorList.add(new MyCol(255,256-num,0));
+                }
+                else{
+                    colorList.add(new MyCol(511-num,0,0));
+                }
             }
         }
 
+
         Collections.sort(list);
-        for(int i=0;i<numCount;i++){
-            int num=list.get(i);
-            if(num<=256){
-                sortedColorList.add(new MyCol(0,256-num,255));
-            }
-            else{
-                sortedColorList.add(new MyCol(0, 0,511-num));
+        if(currSelColour==blueColorSel){
+            for(int i=0;i<numCount;i++){
+                int num=list.get(i);
+                if(num<=256){
+                    sortedColorList.add(new MyCol(0,256-num,255));
+                }
+                else{
+                    sortedColorList.add(new MyCol(0, 0,511-num));
+                }
             }
         }
-        colorsGridView.setAdapter(new MyGridAdapter(this,colorList,sortedColorList,currRowCount,currColCount,start_game_btn));
+        else if(currSelColour==blackColorSel){
+            for(int i=0;i<numCount;i++){
+                int num=list.get(i);
+                sortedColorList.add(new MyCol(255-num,255-num,255-num));
+            }
+        }
+        else{
+            for(int i=0;i<numCount;i++){
+                int num=list.get(i);
+                if(num<=256){
+                    sortedColorList.add(new MyCol(255,256-num,0));
+                }
+                else{
+                    sortedColorList.add(new MyCol(511-num,0,0));
+                }
+            }
+        }
+
+        gridAdapter=new MyGridAdapter(this,colorList,sortedColorList,currRowCount,currColCount,start_game_btn);
+        colorsGridView.setAdapter(gridAdapter);
 
     }
 
@@ -302,12 +391,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
-    public void pl(String log){
-        Log.i(TAG,log);
+    int current_vol_status=1;
+    public void toggleSound(View view){
+        ImageButton img=findViewById(R.id.imageButton);
+        if(current_vol_status==1){
+            img.setImageResource(R.drawable.volume_off_icon);
+            current_vol_status=0;
+            gridAdapter.current_vol_status=0;
+        }
+        else{
+            img.setImageResource(R.drawable.volume_on_icon);
+            current_vol_status=1;
+            gridAdapter.current_vol_status=1;
+        }
     }
-    public void pl(Object log){
-        Log.i(TAG,String.valueOf(log));
+
+    public void pl(String tag,String log){
+        Log.i(tag,log);
+    }
+    public void pl(String tag,Object log){
+        Log.i(tag,String.valueOf(log));
     }
 }
 

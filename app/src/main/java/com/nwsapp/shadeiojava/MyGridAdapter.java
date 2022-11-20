@@ -3,6 +3,8 @@ package com.nwsapp.shadeiojava;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.DrawableContainer;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.util.Log;
@@ -30,9 +32,7 @@ public class MyGridAdapter extends BaseAdapter implements View.OnClickListener {
     Context context;
     List<MyCol> listOfColor;
     List<MyCol> sortedListOfColor;
-    GridView gdv;
     Button start_game_btn;
-//    MediaPlayer wrong_answer_buzzer,correct_answer_tick;
     int ptr=0;
     public MyGridAdapter(Context context, List<MyCol> listOfColor, List<MyCol> sortedListOfColor, int rowCount, int colCount, Button start_game_btn){
         this.context=context;
@@ -40,9 +40,6 @@ public class MyGridAdapter extends BaseAdapter implements View.OnClickListener {
         this.rowCount=rowCount;
         this.colCount=colCount;
         this.sortedListOfColor=sortedListOfColor;
-//        wrong_answer_buzzer=MediaPlayer.create(context,R.raw.mixkit_wrong_electricity_buzz_955);
-//        correct_answer_tick=MediaPlayer.create(context,R.raw.correct_choice_43861);
-
         this.start_game_btn=start_game_btn;
     }
 
@@ -64,6 +61,8 @@ public class MyGridAdapter extends BaseAdapter implements View.OnClickListener {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         MaterialCardView lf= (MaterialCardView) LayoutInflater.from(context).inflate(R.layout.one_grid_item,viewGroup,false);
+        int width=context.getResources().getDisplayMetrics().widthPixels;
+        lf.setStrokeWidth((int) (width/150f));
         lf.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -87,17 +86,10 @@ public class MyGridAdapter extends BaseAdapter implements View.OnClickListener {
                 lf.startAnimation(anim);
             }
         },Math.abs(new Random().nextInt(500)));
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                setTextBack();
-            }
-        },2000);
 
         ImageButton img=lf.findViewById(R.id.imgBtn);
         img.setBackgroundColor(Color.rgb(listOfColor.get(i).r,listOfColor.get(i).g,listOfColor.get(i).b));
         img.setOnClickListener(this);
-        int width=context.getResources().getDisplayMetrics().widthPixels;
         int gridWidth=viewGroup.getWidth();
         int gridHeight=viewGroup.getHeight();
         lf.getLayoutParams().width=(gridWidth-(int)(width/50f)*(colCount-1))/colCount;
@@ -106,11 +98,7 @@ public class MyGridAdapter extends BaseAdapter implements View.OnClickListener {
         return lf;
     }
 
-    public void setTextBack(){
-        start_game_btn.setText("Start New Game");
-        start_game_btn.setClickable(true);
-        start_game_btn.setEnabled(true);
-    }
+    int current_vol_status=1;
 
 
     @Override
@@ -127,26 +115,21 @@ public class MyGridAdapter extends BaseAdapter implements View.OnClickListener {
 
         MaterialCardView cv= (MaterialCardView) view.getParent();
         if(red==reqRed && blue==reqBlue && green==reqGreen){
-//            if(correct_answer_tick.isPlaying()){
-//                correct_answer_tick.stop();
-//            }
-//            view.setVisibility(View.GONE);
             ((CardView)view.getParent()).setVisibility(View.GONE);
-            MediaPlayer mp=MediaPlayer.create(context,R.raw.correct_choice_43861);
-            mp.start();
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mp.release();
-                }
-            },2000);
-//            MaterialCardView crdv= (MaterialCardView) view.getParent();
-//            crdv.setStrokeColor(Color.GREEN);
+            if(current_vol_status==1){
+                MediaPlayer mp=MediaPlayer.create(context,R.raw.correct_choice_43861);
+                mp.start();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mp.release();
+                    }
+                },2000);
+            }
+
             ptr++;
             cv.setOnClickListener(null);
             view.setOnClickListener(null);
-//            view.setVisibility(View.INVISIBLE);
-//            gdv.getPo
             Animation anim = new ScaleAnimation(
                     1f, 0f, // Start and end values for the X axis scaling
                     1f, 0f, // Start and end values for the Y axis scaling
@@ -157,18 +140,18 @@ public class MyGridAdapter extends BaseAdapter implements View.OnClickListener {
             cv.startAnimation(anim);
         }
         else{
-//            if(wrong_answer_buzzer.isPlaying()){
-//                wrong_answer_buzzer.stop();
-//            }
             Log.i("het","yu");
-            MediaPlayer mp=MediaPlayer.create(context,R.raw.mixkit_wrong_electricity_buzz_955);
-            mp.start();
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mp.release();
-                }
-            },2000);
+            if(current_vol_status==1){
+                MediaPlayer mp=MediaPlayer.create(context,R.raw.mixkit_wrong_electricity_buzz_955);
+                mp.start();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mp.release();
+                    }
+                },2000);
+            }
+
             int tag= (int) cv.getTag();
             tag++;
             Log.i("hi",String.valueOf(tag));
