@@ -1,7 +1,10 @@
 package com.nwsapp.shadeiojava;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.icu.text.UnicodeSetSpanner;
 import android.os.Bundle;
@@ -13,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -23,7 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener,GameOverListener {
 
     // the four color selection buttons
     ImageButton blueColorSel;
@@ -61,6 +65,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     LinearLayout startGame;
 
     ImageButton sound_adjust;
+
+    LinearLayout heart_life;
     // utility purposes
     int screenWidth,screenHeight;
     float screenDensity;
@@ -73,6 +79,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         screenWidth = getResources().getDisplayMetrics().widthPixels;
         screenHeight=getResources().getDisplayMetrics().heightPixels;
         screenDensity=getResources().getDisplayMetrics().density;
+
+        heart_life=findViewById(R.id.heart_ll);
 
         blueColorSel=findViewById(R.id.blue_col);
         blueColorSel.getLayoutParams().width= (int) (screenHeight/35f);
@@ -166,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sortedColorList.clear();
         list.clear();
         colorsGridView.setNumColumns(currColCount);
+        heart_life.removeAllViews();
 
 //         just for testing color differentiation
 //         this shouldn't be deleted
@@ -185,29 +194,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         int numCount=currRowCount*currColCount;
+        int heart_count;
         int minDist;
         if(numCount==6){
             minDist=30;
+            heart_count=1;
             if(currSelColour==blackColorSel){
                 minDist=15;
             }
         }
         else if(numCount==15){
             minDist=15;
+            heart_count=2;
             if(currSelColour==blackColorSel){
                 minDist=9;
             }
         }
         else if(numCount==24){
             minDist=9;
+            heart_count=3;
             if(currSelColour==blackColorSel){
                 minDist=5;
+                heart_count=4;
             }
         }
         else{
+            pl("un","nkn");
             minDist=5;
+            heart_count=4;
             if(currSelColour==blackColorSel){
                 minDist=2;
+                heart_count=6;
             }
         }
 
@@ -303,7 +320,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        gridAdapter=new MyGridAdapter(this,colorList,sortedColorList,currRowCount,currColCount,start_game_btn);
+        gridAdapter=new MyGridAdapter(this,
+                colorList,
+                sortedColorList,
+                currRowCount,
+                currColCount,
+                start_game_btn,
+                this,
+                heart_life,
+                heart_count);
         colorsGridView.setAdapter(gridAdapter);
 
     }
@@ -412,6 +437,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void pl(String tag,Object log){
         Log.i(tag,String.valueOf(log));
     }
+
+    @Override
+    public void gameOverWithWin() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("You won")
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        startNewGame(start_game_btn);
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    @Override
+    public void gameOverWithLose() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("You lost")
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        startNewGame(start_game_btn);
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+}
+
+interface GameOverListener{
+    void gameOverWithLose();
+    void gameOverWithWin();
 }
 
 class MyCol{

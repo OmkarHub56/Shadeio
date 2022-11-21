@@ -164,6 +164,14 @@
 
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/heart_ll"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="4dp"
+            android:layout_weight="1.2"
+            android:orientation="horizontal" />
+
     </LinearLayout>
 
     <GridView
@@ -174,7 +182,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="20dp"
-        android:layout_weight="20"
+        android:layout_weight="16"
         android:gravity="center"
         android:horizontalSpacing="10dp"
         android:numColumns="4"

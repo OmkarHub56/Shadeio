@@ -18,6 +18,8 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.cardview.widget.CardView;
@@ -33,15 +35,31 @@ public class MyGridAdapter extends BaseAdapter implements View.OnClickListener {
     List<MyCol> listOfColor;
     List<MyCol> sortedListOfColor;
     Button start_game_btn;
+    GameOverListener gm;
+    LinearLayout heart_life;
+    int heart_count;
     int ptr=0;
-    public MyGridAdapter(Context context, List<MyCol> listOfColor, List<MyCol> sortedListOfColor, int rowCount, int colCount, Button start_game_btn){
+    public MyGridAdapter(Context context, List<MyCol> listOfColor, List<MyCol> sortedListOfColor, int rowCount, int colCount, Button start_game_btn, GameOverListener gm, LinearLayout heart_life,int heart_count){
         this.context=context;
         this.listOfColor=listOfColor;
         this.rowCount=rowCount;
         this.colCount=colCount;
         this.sortedListOfColor=sortedListOfColor;
         this.start_game_btn=start_game_btn;
+        this.gm=gm;
+        this.heart_life=heart_life;
+        this.heart_count=heart_count;
+
+        heartSetup();
     }
+
+    public void heartSetup(){
+        for(int i=0;i<heart_count;i++){
+            ImageView hrt= (ImageView) LayoutInflater.from(context).inflate(R.layout.heart_imageview,heart_life,false);
+            heart_life.addView(hrt);
+        }
+    }
+
 
     @Override
     public int getCount() {
@@ -52,7 +70,6 @@ public class MyGridAdapter extends BaseAdapter implements View.OnClickListener {
     public Object getItem(int i) {
         return listOfColor.get(i);
     }
-
     @Override
     public long getItemId(int i) {
         return 100;
@@ -63,13 +80,6 @@ public class MyGridAdapter extends BaseAdapter implements View.OnClickListener {
         MaterialCardView lf= (MaterialCardView) LayoutInflater.from(context).inflate(R.layout.one_grid_item,viewGroup,false);
         int width=context.getResources().getDisplayMetrics().widthPixels;
         lf.setStrokeWidth((int) (width/150f));
-        lf.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i("str","idhar aya");
-                lf.setStrokeColor(Color.GREEN);
-            }
-        });
         lf.setTag(i);
 
         new Handler().postDelayed(new Runnable() {
@@ -138,6 +148,14 @@ public class MyGridAdapter extends BaseAdapter implements View.OnClickListener {
             anim.setFillAfter(true); // Needed to keep the result of the animation
             anim.setDuration(1000);
             cv.startAnimation(anim);
+            if(ptr==colCount*rowCount){
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        gm.gameOverWithWin();
+                    }
+                },500);
+            }
         }
         else{
             Log.i("het","yu");
@@ -169,6 +187,13 @@ public class MyGridAdapter extends BaseAdapter implements View.OnClickListener {
             }
             Toast.makeText(context, "The inv is wrong", Toast.LENGTH_SHORT).show();
 
+            heart_life.removeViewAt(0);
+            heart_life.addView(LayoutInflater.from(context).inflate(R.layout.empty_heart_imageview,heart_life,false));
+            heart_count--;
+            if(heart_count==0){
+                heart_life.removeAllViews();
+                gm.gameOverWithLose();
+            }
         }
     }
 }
